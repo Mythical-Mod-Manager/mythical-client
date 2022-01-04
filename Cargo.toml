@@ -1,0 +1,13 @@
+[package]
+name = "mythical-client"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mod_manager = { path = "./components/mod_manager" }
+tokio = { version = "1.15.0", features = ["full"] }
+
+[workspace]
+members = ["./components/mod_manager"]
