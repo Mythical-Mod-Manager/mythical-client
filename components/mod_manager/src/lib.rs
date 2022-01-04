@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 #[macro_use]
 extern crate derivative;
 

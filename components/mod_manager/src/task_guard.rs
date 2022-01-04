@@ -1,13 +1,5 @@
 use pin_project::pin_project;
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Debug,
-    future::Future,
-    hash::Hash,
-    path::PathBuf,
-    pin::Pin,
-    sync::{Arc, RwLock},
-};
+use std::{collections::HashSet, fmt::Debug, future::Future, hash::Hash, pin::Pin, sync::RwLock};
 
 /// A structure that helps asynchronously lock named resources, for example directories or paths.
 /// This is especially useful for locking folders and files that may be used by
@@ -38,7 +30,7 @@ impl<'a, T: Eq + Hash + Clone + Debug> Future for GuardWaiter<'a, T> {
 
     fn poll(
         self: Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
+        _cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Self::Output> {
         let this = self.project();
         let guard = this.guard;
