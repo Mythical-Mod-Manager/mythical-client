@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use mod_manager::{
-    game::{GameLibrary, GameMetadata},
+    game::{GameLibrary, GameMetadata, SupportedGames},
     game_discovery::GameDiscoveryRequirement,
     game_search::search_folder,
 };
@@ -44,10 +44,15 @@ fn get_it_takes_two_metadata() -> GameMetadata {
 async fn main() {
     let games = vec![get_pavlov_metadata(), get_it_takes_two_metadata()];
 
-    let library = GameLibrary::new(games);
+    let supported = SupportedGames::new(games);
 
-    let items = search_folder(&PathBuf::from(r"F:\Steam\steamapps\common"), &library).unwrap();
-    let items = items.collect::<Vec<_>>();
+    let mut library = GameLibrary::init(&supported);
+    dbg!(library.games());
 
-    dbg!(items);
+    let items = search_folder(&PathBuf::from(r"F:\Steam\steamapps\common"), &supported).unwrap();
+    for item in items {
+        library.add_game(item);
+    }
+
+    dbg!(library.games());
 }

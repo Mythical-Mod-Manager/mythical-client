@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use thiserror::Error;
 
-use crate::game_config::GameConfigParseError;
+use crate::config::ConfigParseError;
 
 /// A requirement to verify if a folder belongs to a specific game.
 /// E.g. verify if a specific game executable is within the folder
@@ -22,7 +22,7 @@ pub enum GameDiscoveryError {
     #[error("A filesystem error occured")]
     IOError(#[from] std::io::Error),
     #[error("Failed to parse the mythical config inside the game")]
-    GameConfigParseError(#[from] GameConfigParseError),
+    ConfigParseError(#[from] ConfigParseError),
 }
 
 type Result<T> = std::result::Result<T, GameDiscoveryError>;

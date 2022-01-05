@@ -1,7 +1,11 @@
 use std::{path::PathBuf, sync::Arc};
 
 use crate::{
-    game_config::{parse_config_in_game, GameConfig, GameConfigParseError},
+    config::{
+        game::{parse_config_in_game, GameConfig},
+        known_games::KnownGames,
+        ConfigParseError,
+    },
     game_discovery::{GameDiscoveryError, GameDiscoveryRequirement},
 };
 
@@ -31,14 +35,14 @@ pub struct GameMetadata {
 
 /// All known games that the mod manager can discover.
 #[derive(Debug)]
-pub struct GameLibrary {
+pub struct SupportedGames {
     games: Vec<Arc<GameMetadata>>,
 }
 
-impl GameLibrary {
+impl SupportedGames {
     /// Create a new game library
     pub fn new(games: Vec<GameMetadata>) -> Self {
-        GameLibrary {
+        SupportedGames {
             games: games.into_iter().map(Arc::new).collect(),
         }
     }
@@ -67,10 +71,7 @@ pub struct Game {
 }
 
 impl Game {
-    fn from_path(
-        path: &PathBuf,
-        metadata: Arc<GameMetadata>,
-    ) -> Result<Self, GameConfigParseError> {
+    fn from_path(path: &PathBuf, metadata: Arc<GameMetadata>) -> Result<Self, ConfigParseError> {
         Ok(Game {
             path: path.clone(),
             metadata,
@@ -86,11 +87,59 @@ pub enum GameState {
 }
 
 impl GameState {
-    fn parse_in_path(path: &PathBuf) -> Result<Self, GameConfigParseError> {
+    fn parse_in_path(path: &PathBuf) -> Result<Self, ConfigParseError> {
         let config = parse_config_in_game(path)?;
         match config {
             None => Ok(GameState::Unpatched),
             Some(config) => Ok(GameState::Patched(config)),
         }
+    }
+}
+
+pub struct GameLibrary {
+    games: Vec<Game>,
+    known_games: KnownGames,
+}
+
+fn game_sorting_fn(g1: &Game, g2: &Game) -> std::cmp::Ordering {
+    g1.metadata.name.cmp(&g2.metadata.name)
+}
+
+impl GameLibrary {
+    pub fn init(supported_games: &SupportedGames) -> Self {
+        let mut known_games = KnownGames::parse_or_default();
+        let games = known_games.games.iter().filter_map(|path| {
+            let discovered = supported_games.discover_folder(path);
+            match discovered {
+                Ok(Some(game)) => Some(game),
+                Ok(None) => None,
+                Err(_) => None, // Ignore errors, remove game
+            }
+        });
+
+        let games = games.collect::<Vec<_>>();
+
+        known_games.write().games = games.iter().map(|g| g.path.clone()).collect();
+
+        GameLibrary { games, known_games }
+    }
+
+    fn normalize_from_games(&mut self) {
+        self.games.sort_by(game_sorting_fn);
+        self.known_games.write().games = self.games.iter().map(|g| g.path.clone()).collect();
+    }
+
+    pub fn games(&self) -> &[Game] {
+        &self.games
+    }
+
+    pub fn add_game(&mut self, game: Game) {
+        let existing = self.games.iter_mut().filter(|g| g.path == game.path).nth(0);
+        if let Some(existing) = existing {
+            *existing = game;
+        } else {
+            self.games.push(game);
+        }
+        self.normalize_from_games();
     }
 }

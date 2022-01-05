@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use thiserror::Error;
 
-use crate::game::{Game, GameLibrary};
+use crate::game::{Game, SupportedGames};
 
 #[derive(Error, Debug)]
 pub enum SearchFolderError {
@@ -16,7 +16,7 @@ pub enum SearchFolderError {
 /// Search a folder and discover games in child folders. Ignore all discovery errors.
 pub fn search_folder<'a>(
     path: &PathBuf,
-    library: &'a GameLibrary,
+    library: &'a SupportedGames,
 ) -> Result<impl 'a + Iterator<Item = Game>, SearchFolderError> {
     let exists = path.exists();
     if !exists {
