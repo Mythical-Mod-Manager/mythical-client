@@ -1,15 +1,9 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    path::PathBuf,
-    sync::{RwLock, RwLockReadGuard, RwLockWriteGuard},
-};
+use std::path::PathBuf;
 
 use crate::dirs::get_config_dir;
 
-use super::{
-    encode_config_to_file, encode_config_to_stream, parse_config_from_file,
-    parse_config_from_stream, ConfigParseError, SaveOnWrite,
-};
+use super::SaveOnWrite;
 
 const SETTINGS_CONFIG: &str = "settings";
 

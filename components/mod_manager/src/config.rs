@@ -1,9 +1,5 @@
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    path::PathBuf,
-    sync::{RwLockReadGuard, RwLockWriteGuard},
-};
+use serde::{de::DeserializeOwned, Serialize};
+use std::path::PathBuf;
 use thiserror::Error;
 
 pub mod game;
@@ -116,7 +112,7 @@ impl<T: DeserializeOwned + Serialize> Drop for SOWWriteGuard<'_, T> {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
+    use std::{collections::HashMap, io::Cursor};
 
     use crate::config::game::{GameConfig, ModProfile};
 
